@@ -2,7 +2,7 @@
 
 ## Instalasi
 
-Silakan periksa panduan instalasi laravel resmi untuk mengetahui persyaratan server sebelum Anda mulai. [Official Documentation](https://laravel.com/docs/8.x/installation)
+Silakan periksa panduan instalasi laravel resmi untuk mengetahui persyaratan server sebelum Anda mulai. [Official Documentation](https://laravel.com/docs/10.x/installation)
 
 Clone repositori
 
