@@ -29,7 +29,7 @@
     <div class="col-lg-4">
       <select class="form-select" name="month">
         @foreach (range(1, 12) as $month)
-          <option value="{{ $month }}" @if ($month == date('n')) selected @endif>{{ date('F', mktime(0, 0, 0, $month, 1)) }}</option>
+          <option value="{{ $month }}" @if ($month == request('month', date('n'))) selected @endif>{{ date('F', mktime(0, 0, 0, $month, 1)) }}</option>
         @endforeach
       </select>
     </div>
@@ -37,7 +37,7 @@
       <div class="input-group">
         <select class="form-select" name="year">
           @foreach (range(date('Y'), 2020) as $year)
-              <option value="{{ $year }}">{{ $year }}</option>
+            <option value="{{ $year }}" @if ($year == request('year', date('Y'))) selected @endif>{{ $year }}</option>
           @endforeach
         </select>
         <button type="submit" class="btn btn-primary">Cari</button>
