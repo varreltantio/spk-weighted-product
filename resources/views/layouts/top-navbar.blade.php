@@ -1,6 +1,6 @@
 <nav class="sb-topnav navbar navbar-expand navbar-dark fixed-top">
   <!-- Navbar Brand-->
-  <a class="navbar-brand ps-3" href="/dashboard">Laundry Cucikan</a>
+  <a class="navbar-brand ps-3" href="#">Laundry Cucikan</a>
   <!-- Sidebar Toggle-->
   <button class="btn btn-link btn-m order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars fa-lg"></i></button>
   <!-- Navbar Search-->
