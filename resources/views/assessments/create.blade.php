@@ -64,19 +64,24 @@
 <script>
   $(document).ready(function(){
     $('.simpan-btn').click(function () {
-      swal({
-            text: "Apakah anda ingin menyimpan data?",
-            icon: "warning",
-            buttons: true,
-            dangerMode: true,
-          })
-      .then((willSave) => {
-        if (willSave) {
-          $('#save-assessment-form').submit();
-        } else {
-          swal("Data tidak disimpan!");
-        }
-      });
+      var form = $('#save-assessment-form')[0];
+      if (form.checkValidity()) {
+        swal({
+          text: "Apakah anda ingin menyimpan data?",
+          icon: "warning",
+          buttons: true,
+          dangerMode: true,
+        })
+        .then((willSave) => {
+          if (willSave) {
+            form.submit();
+          } else {
+            swal("Data tidak disimpan!");
+          }
+        });
+      } else {
+        form.reportValidity();
+      }
     });
   });
 </script>

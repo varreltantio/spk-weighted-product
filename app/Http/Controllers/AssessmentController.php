@@ -29,10 +29,7 @@ class AssessmentController extends Controller
     {
         $this->authorize('create', Assessment::class);
 
-        $existingUserUuids = Assessment::pluck('user_uuid')->all();
-        $employees = User::where('role', 'karyawan')
-            ->whereNotIn('uuid', $existingUserUuids)
-            ->get();
+        $employees = User::where('role', 'karyawan')->get();
         $criterias = Criteria::all();
 
         return view('assessments.create', compact('employees', 'criterias'));
@@ -49,13 +46,23 @@ class AssessmentController extends Controller
         $criterias = Criteria::all();
 
         foreach ($criterias as $criteria) {
+            $existingAssessment = Assessment::where([
+                'user_uuid' => $validatedData['user_uuid'],
+                'month' => $validatedData['month'],
+                'year' => $validatedData['year'],
+                'criteria_id' => $criteria->id,
+            ])->first();
+
             $inputName = str_replace(' ', '_', $criteria->name);
 
-            $validatedData[$inputName] = 'required|numeric';
             $validatedData['criteria_id'] = $criteria->id;
             $validatedData['value'] = $request->input($inputName);
 
-            Assessment::create($validatedData);
+            if (!$existingAssessment) {
+                Assessment::create($validatedData);
+            } else {
+                return redirect('assessments')->with('error', 'Penilaian gagal ditambahkan karena sudah ada');
+            }
         }
 
         return redirect('assessments')->with('success', 'Penilaian berhasil ditambahkan');
@@ -146,63 +153,67 @@ class AssessmentController extends Controller
             ->values()
             ->toArray();
 
-        $resultsSi = [];
+        if ($assessments) {
+            $resultsSi = [];
 
-        foreach ($assessments as $row) {
-            $product = 1;
-            $values = $row['values'];
+            foreach ($assessments as $row) {
+                $product = 1;
+                $values = $row['values'];
 
-            for ($i = 0; $i < count($values) - 1; $i++) {
-                $category = $resultsWj[$i]['category'];
-                $weightCorrection = $resultsWj[$i]['weightCorrection'];
+                for ($i = 0; $i < count($values) - 1; $i++) {
+                    $category = $resultsWj[$i]['category'];
+                    $weightCorrection = $resultsWj[$i]['weightCorrection'];
 
-                $adjustedWeightCorrection = $category === 'Benefit' ? $weightCorrection : -$weightCorrection;
+                    $adjustedWeightCorrection = $category === 'Benefit' ? $weightCorrection : -$weightCorrection;
 
-                $product *= pow($values[$i], $adjustedWeightCorrection);
+                    $product *= pow($values[$i], $adjustedWeightCorrection);
+                }
+
+                $lastIndex = count($values) - 1;
+                $lastCategory = $resultsWj[$lastIndex]['category'];
+                $lastWeightCorrection = $resultsWj[$lastIndex]['weightCorrection'];
+
+                $lastAdjustedWeightCorrection = $lastCategory === 'Benefit' ? $lastWeightCorrection : -$lastWeightCorrection;
+
+                $resultSi = $product * pow($values[$lastIndex], $lastAdjustedWeightCorrection);
+
+                $resultsSi[] = [
+                    'user_uuid' => $row['user_uuid'],
+                    'si' => $resultSi
+                ];
             }
 
-            $lastIndex = count($values) - 1;
-            $lastCategory = $resultsWj[$lastIndex]['category'];
-            $lastWeightCorrection = $resultsWj[$lastIndex]['weightCorrection'];
+            $totalSi = 0;
 
-            $lastAdjustedWeightCorrection = $lastCategory === 'Benefit' ? $lastWeightCorrection : -$lastWeightCorrection;
-
-            $resultSi = $product * pow($values[$lastIndex], $lastAdjustedWeightCorrection);
-
-            $resultsSi[] = [
-                'user_uuid' => $row['user_uuid'],
-                'si' => $resultSi
-            ];
-        }
-
-        $totalSi = 0;
-
-        foreach ($resultsSi as $resultSi) {
-            $totalSi += $resultSi['si'];
-        }
-
-        $nilaiVi = [];
-
-        foreach ($resultsSi as $resultSi) {
-            $vi = $resultSi['si'] / $totalSi;
-
-            $userUuid = $resultSi['user_uuid'];
-
-            $user = User::where('uuid', $userUuid)->first();
-
-            if ($user) {
-                $name = $user->name;
-            } else {
-                $name = "Unknown";
+            foreach ($resultsSi as $resultSi) {
+                $totalSi += $resultSi['si'];
             }
 
-            $resultsVi[] = [
-                'user_uuid' => $resultSi['user_uuid'],
-                'vi' => $vi,
-                'name' => $name
-            ];
-        }
+            $nilaiVi = [];
 
-        return view('assessments.bestEmployee', compact('resultsWj', 'resultsSi', 'resultsVi'));
+            foreach ($resultsSi as $resultSi) {
+                $vi = $resultSi['si'] / $totalSi;
+
+                $userUuid = $resultSi['user_uuid'];
+
+                $user = User::where('uuid', $userUuid)->first();
+
+                if ($user) {
+                    $name = $user->name;
+                } else {
+                    $name = "Unknown";
+                }
+
+                $resultsVi[] = [
+                    'user_uuid' => $resultSi['user_uuid'],
+                    'vi' => $vi,
+                    'name' => $name
+                ];
+            }
+
+            return view('assessments.bestEmployee', compact('resultsWj', 'resultsSi', 'resultsVi'));
+        } else {
+            return redirect('assessments')->with('error', 'Harap tambahkan penilaian karyawan terlebih dahulu');
+        }
     }
 }
