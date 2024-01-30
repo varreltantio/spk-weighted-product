@@ -7,13 +7,13 @@ Silakan periksa panduan instalasi laravel resmi untuk mengetahui persyaratan ser
 Clone repositori
 
 ```
-git clone https://github.com/varreltantio/sistem-pemilihan-karyawan-terbaik-dengan-weighted-product.git
+git clone https://github.com/varreltantio/spk-weighted-product.git
 ```
 
 Beralih ke folder repo
 
 ```
-cd sistem-pemilihan-karyawan-terbaik-dengan-weighted-product
+cd spk-weighted-product
 ```
 
 Instal semua dependensi menggunakan composer
